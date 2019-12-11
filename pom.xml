@@ -36,7 +36,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.tango</groupId>
+            <groupId>org.tango-controls</groupId>
             <artifactId>JTangoServer</artifactId>
             <version>9.5.18-hzg.4</version>
         </dependency>
