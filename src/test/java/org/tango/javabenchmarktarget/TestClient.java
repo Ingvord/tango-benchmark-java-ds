@@ -18,7 +18,12 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class TestClient {
 
-    public static final int NUMBER_OF_CLIENTS = 128;
+    public static final int NUMBER_OF_CLIENTS = 64;
+
+    public static final int HOUR = 3_600_000;
+    public static final int FIFTEEN_SECONDS = 15_000;
+    public static final int MINUTE = 60_000;
+    public static final int FIFTEEN_MINUTE = 900_000;
 
     @Test
     @Ignore
@@ -53,7 +58,7 @@ public class TestClient {
         }
 
 
-        Thread.sleep(3_600_000);
+        Thread.sleep(FIFTEEN_SECONDS);
         finish.set(true);
 
         executorService.shutdownNow();
