@@ -45,21 +45,8 @@ import org.slf4j.ext.XLoggerFactory;
 import org.tango.DeviceState;
 import org.tango.server.InvocationContext;
 import org.tango.server.ServerManager;
-import org.tango.server.annotation.AroundInvoke;
-import org.tango.server.annotation.Attribute;
-import org.tango.server.annotation.AttributeProperties;
-import org.tango.server.annotation.ClassProperty;
-import org.tango.server.annotation.Command;
-import org.tango.server.annotation.Delete;
+import org.tango.server.annotation.*;
 import org.tango.server.annotation.Device;
-import org.tango.server.annotation.DeviceProperty;
-import org.tango.server.annotation.DynamicManagement;
-import org.tango.server.annotation.Init;
-import org.tango.server.annotation.State;
-import org.tango.server.annotation.StateMachine;
-import org.tango.server.annotation.Status;
-import org.tango.server.annotation.DeviceManagement;
-import org.tango.server.annotation.Pipe;
 import org.tango.server.attribute.ForwardedAttribute;import org.tango.server.pipe.PipeValue;
 import org.tango.server.dynamic.DynamicManager;
 import org.tango.server.device.DeviceManager;
@@ -84,6 +71,8 @@ import org.tango.javabenchmarktarget.EventThread;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import sun.misc.Unsafe;
 
 /*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.imports
@@ -93,7 +82,7 @@ import sun.misc.Unsafe;
  *    Benchmark device for counting attribute, command and pipe calls
  */
 
-@Device
+@Device(transactionType = TransactionType.NONE)
 public class JavaBenchmarkTarget {
 
 	protected static final Logger logger = LoggerFactory.getLogger(JavaBenchmarkTarget.class);
@@ -253,9 +242,9 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getBenchmarkScalarAttribute) ENABLED START -----*/
 
 		//	Put read attribute code here
-		alwaysExecutedHookCount++;
+		alwaysExecutedHookCount.incrementAndGet();
 		scalarReadsCount++;
-		readAttributeHardwareCount++;
+		readAttributeHardwareCount.incrementAndGet();
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getBenchmarkScalarAttribute
 		attributeValue.setValue(benchmarkScalarAttribute);
 		xlogger.exit();
@@ -270,13 +259,15 @@ public class JavaBenchmarkTarget {
 		xlogger.entry();
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.setBenchmarkScalarAttribute) ENABLED START -----*/
 		this.benchmarkScalarAttribute = benchmarkScalarAttribute;
-		alwaysExecutedHookCount++;
-		scalarWritesCount++;
+		alwaysExecutedHookCount.incrementAndGet();
+		scalarWritesCount.incrementAndGet();
 
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.setBenchmarkScalarAttribute
 		xlogger.exit();
 	}
-	
+
+
+	private final AtomicInteger alwaysExecutedHookCount = new AtomicInteger();
 	/**
 	 * Attribute AlwaysExecutedHookCount, int, Scalar, READ
 	 * description:
@@ -284,29 +275,14 @@ public class JavaBenchmarkTarget {
 	 */
 	@Attribute(name="AlwaysExecutedHookCount")
 	@AttributeProperties(description="always executed hook count")
-	private int alwaysExecutedHookCount;
-	/**
-	 * Read attribute AlwaysExecutedHookCount
-	 * 
-	 * @return attribute value
-	 * @throws DevFailed if read attribute failed.
-	 */
-	public org.tango.server.attribute.AttributeValue getAlwaysExecutedHookCount() throws DevFailed {
+	public int getAlwaysExecutedHookCount(){
 		xlogger.entry();
-		org.tango.server.attribute.AttributeValue
-			attributeValue = new org.tango.server.attribute.AttributeValue();
-		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getAlwaysExecutedHookCount) ENABLED START -----*/
-
-		//	Put read attribute code here
-		alwaysExecutedHookCount++;
-		readAttributeHardwareCount++;
-
-		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getAlwaysExecutedHookCount
-		attributeValue.setValue(alwaysExecutedHookCount);
+		readAttributeHardwareCount.incrementAndGet();
 		xlogger.exit();
-		return attributeValue;
+		return alwaysExecutedHookCount.incrementAndGet();
 	}
-	
+
+	private final AtomicInteger readAttributeHardwareCount = new AtomicInteger();
 	/**
 	 * Attribute ReadAttributeHardwareCount, int, Scalar, READ
 	 * description:
@@ -314,29 +290,14 @@ public class JavaBenchmarkTarget {
 	 */
 	@Attribute(name="ReadAttributeHardwareCount")
 	@AttributeProperties(description="read attribute hardware count")
-	private int readAttributeHardwareCount;
-	/**
-	 * Read attribute ReadAttributeHardwareCount
-	 * 
-	 * @return attribute value
-	 * @throws DevFailed if read attribute failed.
-	 */
-	public org.tango.server.attribute.AttributeValue getReadAttributeHardwareCount() throws DevFailed {
+	public int getReadAttributeHardwareCount(){
 		xlogger.entry();
-		org.tango.server.attribute.AttributeValue
-			attributeValue = new org.tango.server.attribute.AttributeValue();
-		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getReadAttributeHardwareCount) ENABLED START -----*/
-
-		//	Put read attribute code here
-		alwaysExecutedHookCount++;
-		readAttributeHardwareCount++;
-
-		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getReadAttributeHardwareCount
-		attributeValue.setValue(readAttributeHardwareCount);
+		alwaysExecutedHookCount.incrementAndGet();
 		xlogger.exit();
-		return attributeValue;
+		return readAttributeHardwareCount.incrementAndGet();
 	}
-	
+
+	private final AtomicInteger writeAttributeCounterCount = new AtomicInteger();
 	/**
 	 * Attribute WriteAttributeCounterCount, int, Scalar, READ
 	 * description:
@@ -344,30 +305,16 @@ public class JavaBenchmarkTarget {
 	 */
 	@Attribute(name="WriteAttributeCounterCount")
 	@AttributeProperties(description="write attribute counter count")
-	private int writeAttributeCounterCount;
-	/**
-	 * Read attribute WriteAttributeCounterCount
-	 * 
-	 * @return attribute value
-	 * @throws DevFailed if read attribute failed.
-	 */
-	public org.tango.server.attribute.AttributeValue getWriteAttributeCounterCount() throws DevFailed {
+	public int getWriteAttributeCounterCount(){
 		xlogger.entry();
-		org.tango.server.attribute.AttributeValue
-			attributeValue = new org.tango.server.attribute.AttributeValue();
-		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getWriteAttributeCounterCount) ENABLED START -----*/
-
-		//	Put read attribute code here
-		alwaysExecutedHookCount++;
-		readAttributeHardwareCount++;
-		writeAttributeCounterCount = scalarWritesCount +
-		    spectrumWritesCount + imageWritesCount;
-		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getWriteAttributeCounterCount
-		attributeValue.setValue(writeAttributeCounterCount);
+		alwaysExecutedHookCount.incrementAndGet();
+		readAttributeHardwareCount.incrementAndGet();
+		writeAttributeCounterCount.set(scalarWritesCount.get() +
+				spectrumWritesCount.get() + imageWritesCount.get());
 		xlogger.exit();
-		return attributeValue;
+		return writeAttributeCounterCount.get();
 	}
-	
+
 	/**
 	 * Attribute ScalarReadsCount, int, Scalar, READ
 	 * description:
@@ -389,8 +336,8 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getScalarReadsCount) ENABLED START -----*/
 
 		//	Put read attribute code here
-		alwaysExecutedHookCount++;
-		readAttributeHardwareCount++;
+		alwaysExecutedHookCount.incrementAndGet();
+		readAttributeHardwareCount.incrementAndGet();
 
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getScalarReadsCount
 		attributeValue.setValue(scalarReadsCount);
@@ -419,8 +366,8 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getSpectrumReadsCount) ENABLED START -----*/
 
 		//	Put read attribute code here
-		alwaysExecutedHookCount++;
-		readAttributeHardwareCount++;
+		alwaysExecutedHookCount.incrementAndGet();
+		readAttributeHardwareCount.incrementAndGet();
 
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getSpectrumReadsCount
 		attributeValue.setValue(spectrumReadsCount);
@@ -449,15 +396,17 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getImageReadsCount) ENABLED START -----*/
 
 		//	Put read attribute code here
-		alwaysExecutedHookCount++;
-		readAttributeHardwareCount++;
+		alwaysExecutedHookCount.incrementAndGet();
+		readAttributeHardwareCount.incrementAndGet();
 
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getImageReadsCount
 		attributeValue.setValue(imageReadsCount);
 		xlogger.exit();
 		return attributeValue;
 	}
-	
+
+	private final AtomicInteger scalarWritesCount =  new AtomicInteger();
+
 	/**
 	 * Attribute ScalarWritesCount, int, Scalar, READ
 	 * description:
@@ -465,29 +414,16 @@ public class JavaBenchmarkTarget {
 	 */
 	@Attribute(name="ScalarWritesCount")
 	@AttributeProperties(description="scalar writes count")
-	private int scalarWritesCount;
-	/**
-	 * Read attribute ScalarWritesCount
-	 * 
-	 * @return attribute value
-	 * @throws DevFailed if read attribute failed.
-	 */
-	public org.tango.server.attribute.AttributeValue getScalarWritesCount() throws DevFailed {
+	public int getScalarWritesCount(){
 		xlogger.entry();
-		org.tango.server.attribute.AttributeValue
-			attributeValue = new org.tango.server.attribute.AttributeValue();
-		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getScalarWritesCount) ENABLED START -----*/
-
-		//	Put read attribute code here
-		alwaysExecutedHookCount++;
-		readAttributeHardwareCount++;
-
-		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getScalarWritesCount
-		attributeValue.setValue(scalarWritesCount);
+		alwaysExecutedHookCount.incrementAndGet();
+		readAttributeHardwareCount.incrementAndGet();
 		xlogger.exit();
-		return attributeValue;
+		return scalarWritesCount.get();
 	}
-	
+
+	private final AtomicInteger spectrumWritesCount = new AtomicInteger();
+
 	/**
 	 * Attribute SpectrumWritesCount, int, Scalar, READ
 	 * description:
@@ -495,29 +431,16 @@ public class JavaBenchmarkTarget {
 	 */
 	@Attribute(name="SpectrumWritesCount")
 	@AttributeProperties(description="spectrum writes count")
-	private int spectrumWritesCount;
-	/**
-	 * Read attribute SpectrumWritesCount
-	 * 
-	 * @return attribute value
-	 * @throws DevFailed if read attribute failed.
-	 */
-	public org.tango.server.attribute.AttributeValue getSpectrumWritesCount() throws DevFailed {
+	public int getSpectrumWritesCount(){
 		xlogger.entry();
-		org.tango.server.attribute.AttributeValue
-			attributeValue = new org.tango.server.attribute.AttributeValue();
-		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getSpectrumWritesCount) ENABLED START -----*/
-
-		//	Put read attribute code here
-		alwaysExecutedHookCount++;
-		readAttributeHardwareCount++;
-
-		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getSpectrumWritesCount
-		attributeValue.setValue(spectrumWritesCount);
+		alwaysExecutedHookCount.incrementAndGet();
+		readAttributeHardwareCount.incrementAndGet();
 		xlogger.exit();
-		return attributeValue;
+		return spectrumWritesCount.get();
 	}
-	
+
+	private final AtomicInteger imageWritesCount = new AtomicInteger();
+
 	/**
 	 * Attribute ImageWritesCount, int, Scalar, READ
 	 * description:
@@ -525,29 +448,14 @@ public class JavaBenchmarkTarget {
 	 */
 	@Attribute(name="ImageWritesCount")
 	@AttributeProperties(description="image writes count")
-	private int imageWritesCount;
-	/**
-	 * Read attribute ImageWritesCount
-	 * 
-	 * @return attribute value
-	 * @throws DevFailed if read attribute failed.
-	 */
-	public org.tango.server.attribute.AttributeValue getImageWritesCount() throws DevFailed {
+	public int getImageWritesCount(){
 		xlogger.entry();
-		org.tango.server.attribute.AttributeValue
-			attributeValue = new org.tango.server.attribute.AttributeValue();
-		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getImageWritesCount) ENABLED START -----*/
-
-		//	Put read attribute code here
-		alwaysExecutedHookCount++;
-		readAttributeHardwareCount++;
-
-		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getImageWritesCount
-		attributeValue.setValue(imageWritesCount);
+		alwaysExecutedHookCount.incrementAndGet();
+		readAttributeHardwareCount.incrementAndGet();
 		xlogger.exit();
-		return attributeValue;
+		return imageWritesCount.get();
 	}
-	
+
 	/**
 	 * Attribute CommandCallsCount, int, Scalar, READ
 	 * description:
@@ -569,8 +477,8 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getCommandCallsCount) ENABLED START -----*/
 
 		//	Put read attribute code here
-		alwaysExecutedHookCount++;
-		readAttributeHardwareCount++;
+		alwaysExecutedHookCount.incrementAndGet();
+		readAttributeHardwareCount.incrementAndGet();
 
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getCommandCallsCount
 		attributeValue.setValue(commandCallsCount);
@@ -600,8 +508,8 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getTimeSinceReset) ENABLED START -----*/
 
 		//	Put read attribute code here
-		alwaysExecutedHookCount++;
-		readAttributeHardwareCount++;
+		alwaysExecutedHookCount.incrementAndGet();
+		readAttributeHardwareCount.incrementAndGet();
 		long endTime = System.nanoTime();
 		timeSinceReset = (double)(endTime - resetTime) / 1000000000.;
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getTimeSinceReset
@@ -631,8 +539,8 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getPipeReadsCount) ENABLED START -----*/
 
 		//	Put read attribute code here
-		alwaysExecutedHookCount++;
-		readAttributeHardwareCount++;
+		alwaysExecutedHookCount.incrementAndGet();
+		readAttributeHardwareCount.incrementAndGet();
 
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getPipeReadsCount
 		attributeValue.setValue(pipeReadsCount);
@@ -661,8 +569,8 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getPipeWritesCount) ENABLED START -----*/
 
 		//	Put read attribute code here
-		alwaysExecutedHookCount++;
-		readAttributeHardwareCount++;
+		alwaysExecutedHookCount.incrementAndGet();
+		readAttributeHardwareCount.incrementAndGet();
 
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getPipeWritesCount
 		attributeValue.setValue(pipeWritesCount);
@@ -807,9 +715,9 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getBenchmarkSpectrumAttribute) ENABLED START -----*/
 
 		//	Put read attribute code here
-		alwaysExecutedHookCount++;
+		alwaysExecutedHookCount.incrementAndGet();
 		spectrumReadsCount++;
-		readAttributeHardwareCount++;
+		readAttributeHardwareCount.incrementAndGet();
 
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getBenchmarkSpectrumAttribute
 		attributeValue.setValue(benchmarkSpectrumAttribute);
@@ -825,8 +733,8 @@ public class JavaBenchmarkTarget {
 		xlogger.entry();
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.setBenchmarkSpectrumAttribute) ENABLED START -----*/
 		this.benchmarkSpectrumAttribute = benchmarkSpectrumAttribute;
-		alwaysExecutedHookCount++;
-		spectrumWritesCount++;
+		alwaysExecutedHookCount.incrementAndGet();
+		spectrumWritesCount.incrementAndGet();
 
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.setBenchmarkSpectrumAttribute
 		xlogger.exit();
@@ -853,9 +761,9 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.getBenchmarkImageAttribute) ENABLED START -----*/
 
 		//	Put read attribute code here
-		alwaysExecutedHookCount++;
+		alwaysExecutedHookCount.incrementAndGet();
 		imageReadsCount++;
-		readAttributeHardwareCount++;
+		readAttributeHardwareCount.incrementAndGet();
 
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.getBenchmarkImageAttribute
 		attributeValue.setValue(benchmarkImageAttribute);
@@ -871,8 +779,8 @@ public class JavaBenchmarkTarget {
 		xlogger.entry();
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.setBenchmarkImageAttribute) ENABLED START -----*/
 		this.benchmarkImageAttribute = benchmarkImageAttribute;
-		alwaysExecutedHookCount++;
-		imageWritesCount++;
+		alwaysExecutedHookCount.incrementAndGet();
+		imageWritesCount.incrementAndGet();
 
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.setBenchmarkImageAttribute
 		xlogger.exit();
@@ -914,7 +822,7 @@ public class JavaBenchmarkTarget {
 		xlogger.entry();
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.setBenchmarkPipe) ENABLED START -----*/
 		this.benchmarkPipe = pipeValue;
-		// alwaysExecutedHookCount++;
+		// alwaysExecutedHookCount.incrementAndGet();
 		pipeWritesCount++;
 
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.setBenchmarkPipe
@@ -988,7 +896,7 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.benchmarkCommand) ENABLED START -----*/
 
 		//	Put command code here
-		alwaysExecutedHookCount++;
+		alwaysExecutedHookCount.incrementAndGet();
 		commandCallsCount++;
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.benchmarkCommand
 		xlogger.exit();
@@ -1006,7 +914,7 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.setSpectrumSize) ENABLED START -----*/
 
 		//	Put command code here
-		// alwaysExecutedHookCount++;
+		// alwaysExecutedHookCount.incrementAndGet();
 		benchmarkSpectrumAttribute = new double[setSpectrumSizeIn];
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.setSpectrumSize
 		xlogger.exit();
@@ -1024,7 +932,7 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.setImageSize) ENABLED START -----*/
 
 		//	Put command code here
-		// alwaysExecutedHookCount++;
+		// alwaysExecutedHookCount.incrementAndGet();
 		benchmarkImageAttribute = new double[setImageSizeIn[0]][setImageSizeIn[1]];
 		/*----- PROTECTED REGION END -----*/	//	JavaBenchmarkTarget.setImageSize
 		xlogger.exit();
@@ -1041,19 +949,19 @@ public class JavaBenchmarkTarget {
 		/*----- PROTECTED REGION ID(JavaBenchmarkTarget.resetCounters) ENABLED START -----*/
 
 		//	Put command code here
-		// alwaysExecutedHookCount++;
-		alwaysExecutedHookCount = 0;
-		readAttributeHardwareCount = 0;
-		writeAttributeCounterCount = 0;
+		// alwaysExecutedHookCount.incrementAndGet();
+		alwaysExecutedHookCount.set(0);
+		readAttributeHardwareCount.set(0);
+		writeAttributeCounterCount.set(0);
 
 		scalarReadsCount = 0;
 		spectrumReadsCount = 0;
 		imageReadsCount = 0;
 		pipeReadsCount = 0;
 
-		scalarWritesCount = 0;
-		spectrumWritesCount = 0;
-		imageWritesCount = 0;
+		scalarWritesCount.set(0);
+		spectrumWritesCount.set(0);
+		imageWritesCount.set(0);
 		pipeWritesCount = 0;
 
  		commandCallsCount = 0;
